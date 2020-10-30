@@ -12,6 +12,7 @@ test_art_url_log.txt
 test_check.rtf
 uebersetzer.py
 .DS_Store
+models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

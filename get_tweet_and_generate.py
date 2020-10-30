@@ -4,6 +4,8 @@ import gpt_2_simple as gpt2
 import pandas as pd 
 import sys
 from translate import Translator
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 twitter_credential_path = 'twitter_creds.json'
 with open(twitter_credential_path, "r") as json_file:
