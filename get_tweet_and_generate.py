@@ -1,6 +1,5 @@
 import tweepy
 import json
-import gpt_2_simple as gpt2
 import pandas as pd 
 import sys
 from translate import Translator
@@ -50,18 +49,17 @@ get_tweets()
 def db_check():
     db = pd.read_csv("db.csv").to_dict()
     if tweets_dict['date'] == str(db['date'][0]):
-        print ('Tweet ist bereits getwittert')
-        print (db['date'][0])
-        print (tweets_dict['date'])
+        print ('Tweet ist bereits getwittert', flush=True)
+        print (db['date'][0], flush=True)
+        print (tweets_dict['date'], flush=True)
         sys.exit()
     else:
-        print (db['date'][0])
-        print (tweets_dict['date'])
+        print (db['date'][0], flush=True)
+        print (tweets_dict['date'], flush=True)
         db.update(tweets_dict)
         df = pd.DataFrame(db, index=[0])
         df.to_csv("db.csv")
-        print ('Ein neuer Tweet in db.csv – es geht los')
-        pass
+        print ('Ein neuer Tweet in db.csv – es geht los', flush=True)
 db_check()
 
 # Bearbeiten des Titels und uebersetzung
@@ -72,7 +70,7 @@ tweet_ohne_hashtag = translator.translate(tweet_ohne_hashtag_de)
 # GPT2 PART
 
 prefix = '===' + tweet_ohne_hashtag + '==='
-
+import gpt_2_simple as gpt2
 sess = gpt2.start_tf_sess()
 gpt2.load_gpt2(sess)
 text = gpt2.generate(
@@ -96,12 +94,12 @@ if len(tweet_lang) >= 260:
         k += 1
 else:
     tweet_final_liste = [tweet_lang]
+print (6*"=", flush=True)
+print ('Tweet zu', hashtag, flush=True)
 print (6*"=")
-print ('Tweet zu', hashtag)
+print ('Dict:', tweets_dict, flush=True)
 print (6*"=")
-print ('Dict:', tweets_dict)
-print (6*"=")
-print ('Titel:', tweet_ohne_hashtag)
+print ('Titel:', tweet_ohne_hashtag, flush=True)
 
 
 # Bestandteile Tweet
@@ -111,7 +109,7 @@ user = '@' + str(tweets_dict['user'])
 # Fertiger Tweet
 new_tweet = user + '\n' + '.'.join(tweet_final_liste)
     
-print (6*'=')
-print ('tweet:', new_tweet[0:280])    
+print (6*'=', flush=True)
+print ('tweet:', new_tweet[0:280], flush=True)    
 
 api.update_status(new_tweet[0:280])
