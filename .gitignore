@@ -13,6 +13,7 @@ test_check.rtf
 uebersetzer.py
 .DS_Store
 models/
+pics/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
