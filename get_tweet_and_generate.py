@@ -4,7 +4,7 @@ import pandas as pd
 import sys
 from translate import Translator
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '4' 
 
 twitter_credential_path = 'twitter_creds.json'
 with open(twitter_credential_path, "r") as json_file:
@@ -15,8 +15,6 @@ CONSUMER_KEY = twitter_creds["consumer_key"]
 CONSUMER_SECRET = twitter_creds["consumer_secret"]
 ACCESS_KEY = twitter_creds["access_key"]
 ACCESS_SECRET = twitter_creds["access_secret"]
-
-
 
 # Authentifizierung
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -40,10 +38,10 @@ def get_tweets():
         ).items(1) # 1 da nur das neueste genutzt wird # später vieleicht 5 auf einmal erstellen
 
     for tweet in tweets:
+        tweets_dict['index'] = [0]
         tweets_dict['user'] = tweet.user.screen_name
         tweets_dict['tweet'] = tweet.text
-        tweets_dict['date'] = str(tweet.created_at)[0:20]
-        
+        tweets_dict['date'] = str(tweet.created_at)[0:20] 
 get_tweets()
 
 def db_check():
@@ -56,8 +54,8 @@ def db_check():
     else:
         print (db['date'][0], flush=True)
         print (tweets_dict['date'], flush=True)
-        db.update(tweets_dict)
-        df = pd.DataFrame(db, index=[0])
+        df = pd.DataFrame.from_dict(tweets_dict)
+        print(df, flush=True)
         df.to_csv("db.csv")
         print ('Ein neuer Tweet in db.csv – es geht los', flush=True)
 db_check()
@@ -68,22 +66,21 @@ translator = Translator(from_lang="de", to_lang="en")
 tweet_ohne_hashtag = translator.translate(tweet_ohne_hashtag_de)
 
 # GPT2 PART
-
 prefix = '===' + tweet_ohne_hashtag + '==='
 import gpt_2_simple as gpt2
 sess = gpt2.start_tf_sess()
 gpt2.load_gpt2(sess)
 text = gpt2.generate(
     sess,
+    length=50,
     prefix=prefix,
     return_as_list=True
     )[0]
 
-# gpt2.generate(sess) # hier muss noch  -> Start text with titel von tweet_raw eingefügt werden
 split_text = text.split("\n\n")
 tweet_lang = split_text[0].replace('===','')
 
-# Filter out all examples which are longer than 270 characters
+# Filter out all examples which are longer than 260 characters
 if len(tweet_lang) >= 260:
     k = 0
     tweet_geteilt = tweet_lang.split('.')
@@ -94,22 +91,10 @@ if len(tweet_lang) >= 260:
         k += 1
 else:
     tweet_final_liste = [tweet_lang]
-print (6*"=", flush=True)
-print ('Tweet zu', hashtag, flush=True)
-print (6*"=")
-print ('Dict:', tweets_dict, flush=True)
-print (6*"=")
-print ('Titel:', tweet_ohne_hashtag, flush=True)
-
 
 # Bestandteile Tweet
 user = '@' + str(tweets_dict['user'])
-# title = '»' + tweet_ohne_hashtag + '«'
 
 # Fertiger Tweet
 new_tweet = user + '\n' + '.'.join(tweet_final_liste)
-    
-print (6*'=', flush=True)
-print ('tweet:', new_tweet[0:280], flush=True)    
-
 api.update_status(new_tweet[0:280])
